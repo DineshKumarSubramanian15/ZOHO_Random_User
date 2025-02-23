@@ -1,1 +1,57 @@
+# Random User App
 
+## Overview
+The Random User App is an Android application built using Kotlin and Jetpack Compose.
+It fetches and displays random user data, allowing users to search and view details of different
+users.
+
+## Features
+- Display a list of random users
+- Search functionality
+- User detail view
+- Offline support
+- Dynamic theming based on system settings
+
+## Technologies Used
+- Kotlin
+- Jetpack Compose
+- Hilt for dependency injection
+- Material3 for UI components
+- AndroidX libraries
+- Gradle for build automation
+
+## Project Structure
+- `app/src/main/java/com/android/randomuser/`: Contains the main source code for the application.
+- `ui/components/`: Custom UI components used in the app.
+- `ui/theme/`: Theme definitions and theming logic.
+- `screens/listingScreen/`: Code related to the user listing screen.
+- `common/api/`: Common utilities and API-related code.
+
+## Getting Started
+### Prerequisites
+- Android Studio Ladybug | 2024.2.1 or later
+- Android SDK
+- Gradle
+
+### Installation
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/DineshKumarS15/random-user-app.git
+    ```
+2. Open the project in Android Studio.
+3. Sync the project with Gradle files.
+4. Build and run the project on an emulator or physical device.
+
+## Usage
+- Launch the app to see a list of random users.
+- Use the search bar to filter users by name.
+- Click on a user to view their details.
+
+## License
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
+
+## Contributing
+Contributions are welcome! Please open an issue or submit a pull request for any changes.
+
+## Contact
+For any inquiries, please contact Dinesh Kumar S at [your-email@example.com].
