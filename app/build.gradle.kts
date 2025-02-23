@@ -64,19 +64,19 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.51")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.6")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.6")
-    kapt("com.google.dagger:hilt-android-compiler:2.51")
+    implementation(libs.hilt.android)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.8")
+    debugImplementation(libs.ui.test.manifest)
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
 
     // Retrofit library
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
 
     // Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Coil
