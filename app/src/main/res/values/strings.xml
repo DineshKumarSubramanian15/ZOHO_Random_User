@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">RandomUser</string>
+    <string name="no_entries_to_display">No entries to display</string>
+    <string name="something_went_wrong_please_try_again">Something went wrong, Please try again</string>
+    <string name="please_check_your_network_connection">Please check your network connection and Try Again</string>
+    <string name="search">Search…</string>
+    <string name="listing_screen">Listing Screen</string>
+    <string name="details_screen">Details Screen</string>
+    <string name="offline_message">OFFLINE - Internet is not available</string>
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="phone">Phone</string>
+    <string name="cell">Cell</string>
+    <string name="gender">Gender</string>
+</resources>
