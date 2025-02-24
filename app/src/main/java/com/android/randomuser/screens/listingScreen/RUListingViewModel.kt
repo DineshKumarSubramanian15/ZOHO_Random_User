@@ -4,7 +4,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.randomuser.common.api.handleDataLayerResult
-import com.android.randomuser.common.api.response.RUUser
 import com.android.randomuser.common.api.repository.RUUsersRepository
 import com.android.randomuser.common.connectivity.RUNetworkConnectivityStatusProvider
 import com.android.randomuser.ui.components.RUOutlinedTextFieldState
@@ -17,9 +16,15 @@ import javax.inject.Inject
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.widget.Toast
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.core.app.ActivityCompat
-import com.android.randomuser.common.api.RULog
+import com.android.randomuser.R
+import com.android.randomuser.common.RUResourcesProvider
 import com.android.randomuser.common.di.RUDefaultDispatcher
+import com.android.randomuser.ui.components.RUWeatherDetails
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -37,6 +42,7 @@ class RUListingViewModel @Inject constructor(
     private val usersRepo: RUUsersRepository,
     internetConnectivityStatusProvider: RUNetworkConnectivityStatusProvider,
     @RUDefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    private val resourceProvider: RUResourcesProvider
 ) : ViewModel() {
     private val TAG = RUListingViewModel::class.java.simpleName
     val uiState: MutableStateFlow<RUListingScreenUiState> =
@@ -74,16 +80,17 @@ class RUListingViewModel @Inject constructor(
             }
         }
         getUsers()
-        requestLocationPermission()
     }
 
     /**
      * Handle the permission request result. If the permission is granted, then get the location.
      */
-    private fun requestLocationPermission() {
+    fun requestLocationPermission() {
         if (
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
-            PackageManager.PERMISSION_GRANTED
+                PackageManager.PERMISSION_GRANTED
         ) {
             uiState.update { it.copy(launchLocationPermission = true) }
         } else {
@@ -95,17 +102,52 @@ class RUListingViewModel @Inject constructor(
      * Get the location of the user.
      */
     fun getLocation() {
-        RULog.d(TAG, "Getting location")
         uiState.update { it.copy(launchLocationPermission = false) }
+        if (!isGPSEnabled()) {
+            gpsAlert(true)
+            return
+        }
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     val latitude = it.latitude
                     val longitude = it.longitude
                     fetchWeatherData(latitude, longitude)
-                } ?: RULog.d(TAG, "Location is null")
+                } ?: Toast.makeText(
+                    context,
+                    resourceProvider.getString(R.string.unable_to_get_location),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
+    }
+
+    /**
+     * Show the location alert dialog.
+     *
+     * @param show True if the location alert dialog should be shown, false otherwise
+     */
+    fun locationAlert(show: Boolean) {
+        uiState.update { it.copy(locationAlert = show) }
+    }
+
+    /**
+     * Show the GPS alert dialog.
+     *
+     * @param show True if the GPS alert dialog should be shown, false otherwise
+     */
+    fun gpsAlert(show: Boolean) {
+        uiState.update { it.copy(gpsAlert = show) }
+    }
+
+    /**
+     * Check if the GPS is enabled.
+     *
+     * @return True if the GPS is enabled, false otherwise
+     */
+    private fun isGPSEnabled(): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
     /**
@@ -115,15 +157,21 @@ class RUListingViewModel @Inject constructor(
      * @param longitude The longitude of the location
      */
     private fun fetchWeatherData(latitude: Double, longitude: Double) {
-        RULog.d(TAG, "Fetching weather data")
         viewModelScope.launch {
             usersRepo.getWeather(latitude, longitude).handleDataLayerResult(
-                onSuccess = {
-                    RULog.d(TAG, "Weather data: $it")
+                onSuccess = { result ->
+                    uiState.update {
+                        it.copy(
+                            weatherDetails = RUWeatherDetails(
+                                temperature = result?.main?.temp?.toString(),
+                                weatherDescription = result?.weather?.get(0)?.description?.capitalize(Locale.current),
+                                weatherIconUrl = "https://openweathermap.org/img/wn/${result?.weather?.get(0)?.icon}.png"
+                            )
+                        )
+                    }
                 },
                 onFailure = { _, _, errorMessage ->
-                    RULog.d(TAG, "Error: $errorMessage")
-                    uiState.update { it.copy(error = errorMessage, isLoading = false) }
+                    uiState.update { it.copy(error = errorMessage, isLoading = false, weatherDetails = null) }
                 }
             )
         }
@@ -183,20 +231,10 @@ class RUListingViewModel @Inject constructor(
     }
 
     /**
-     * Get the random user data. This method will convert the random user data to the UI model.
-     *
-     * @param user The random user data
-     * @return The UI model for the random user
+     * Dismiss the error message.
      */
-    private fun getRandomUserData(user: List<RUUser>?): List<RURandomUserItem?> {
-        return user?.map {
-            RURandomUserItem(
-                name = "${it.name?.title} ${it.name?.first} ${it.name?.last}",
-                gender = it.gender,
-                email = it.email,
-                profilePic = it.picture?.large
-            )
-        } ?: emptyList()
+    fun dismissError() {
+        uiState.update { it.copy(error = null) }
     }
 }
 
@@ -208,7 +246,11 @@ data class RUListingScreenUiState(
     val randomUser: List<RURandomUserItem?> = emptyList(),
     val error: RUUIText? = null,
     val isInternetAvailable: Boolean = true,
-    val launchLocationPermission: Boolean = false
+    val launchLocationPermission: Boolean = false,
+    val weatherDetails: RUWeatherDetails? = null,
+    val launchLocationSettings: Boolean = false,
+    val gpsAlert: Boolean = false,
+    val locationAlert: Boolean = false
 )
 
 /**

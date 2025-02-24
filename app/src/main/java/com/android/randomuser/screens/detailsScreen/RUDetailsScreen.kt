@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.android.randomuser.R
+import com.android.randomuser.ui.components.RUBasicAlertDialog
 import com.android.randomuser.ui.components.RUOfflineBanner
 import com.android.randomuser.ui.components.RUProfilePicture
 import com.android.randomuser.ui.components.RUScaffold
@@ -46,6 +47,15 @@ fun RUDetailsScreen(
     navController: NavHostController
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    uiState.error?.asString()?.let {
+        RUBasicAlertDialog(
+            message = it,
+            confirmButtonText = stringResource(R.string.ok),
+            onConfirmButtonClicked = viewModel::dismissError
+        )
+    }
+
     RUDetailsUI(
         uiState = uiState,
         goBack = { navController.popBackStack() }

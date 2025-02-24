@@ -31,11 +31,19 @@ import com.android.randomuser.ui.components.RUOutlinedTextFieldState
 import com.android.randomuser.ui.components.RUProfilePicture
 import com.android.randomuser.ui.components.RUScaffold
 import android.Manifest
+import android.content.IntentFilter
+import android.location.LocationManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import com.android.randomuser.common.api.RULog
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.android.randomuser.common.RUGpsReceiver
+import com.android.randomuser.common.launchApplicationSettings
+import com.android.randomuser.common.launchLocationSettings
+import com.android.randomuser.ui.components.RUBasicAlertDialog
 import com.android.randomuser.ui.components.RUText
 
 @Composable
@@ -44,17 +52,38 @@ fun RUListingScreen(
     navController: NavHostController
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    val gpsReceiver = remember { RUGpsReceiver { isEnabled ->
+        if (isEnabled) {
+            viewModel.getLocation()
+        }
+    } }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissionsResult ->
-        val allGranted = permissionsResult.values.all { it }
+        val fineLocationGranted = permissionsResult[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseLocationGranted = permissionsResult[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
 
-        if (allGranted) {
+        if (fineLocationGranted || coarseLocationGranted) {
             viewModel.getLocation()
         } else {
-            RULog.d("RUListingViewModel","Location permission denied")
+            context.launchApplicationSettings()
         }
+    }
+
+    DisposableEffect(Unit) {
+        val intentFilter = IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
+        context.registerReceiver(gpsReceiver, intentFilter)
+
+        onDispose {
+            context.unregisterReceiver(gpsReceiver)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.requestLocationPermission()
     }
 
     LaunchedEffect(uiState.launchLocationPermission) {
@@ -66,6 +95,40 @@ fun RUListingScreen(
                 )
             )
         }
+    }
+
+    if (uiState.gpsAlert) {
+        RUBasicAlertDialog(
+            message = stringResource(R.string.gps_alert_message),
+            confirmButtonText = stringResource(R.string.ok),
+            onConfirmButtonClicked = {
+                viewModel.gpsAlert(false)
+                context.launchLocationSettings()
+             },
+            dismissButtonText = stringResource(R.string.cancel),
+            onDismissed = { viewModel.gpsAlert(false) }
+        )
+    }
+
+    if (uiState.locationAlert) {
+        RUBasicAlertDialog(
+            message = stringResource(R.string.location_alert_message),
+            confirmButtonText = stringResource(R.string.ok),
+            onConfirmButtonClicked = {
+                viewModel.locationAlert(false)
+                context.launchApplicationSettings()
+            },
+            dismissButtonText = stringResource(R.string.cancel),
+            onDismissed = { viewModel.locationAlert(false) }
+        )
+    }
+
+    uiState.error?.asString()?.let {
+        RUBasicAlertDialog(
+            message = it,
+            confirmButtonText = stringResource(R.string.ok),
+            onConfirmButtonClicked = viewModel::dismissError
+        )
     }
 
     if(uiState.isLoading) RULoadingIndicator()
@@ -90,7 +153,8 @@ private fun RUListingScreenUi(
 ) {
     RUScaffold(
         modifier = Modifier.fillMaxSize(),
-        topBarTitle = stringResource(R.string.listing_screen)
+        topBarTitle = stringResource(R.string.listing_screen),
+        weatherDetails = uiState.weatherDetails,
     ) {
         Column(
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primaryContainer),

@@ -1,14 +1,17 @@
 package com.android.randomuser.screens.detailsScreen
 
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.randomuser.common.api.RULog
+import com.android.randomuser.R
 import com.android.randomuser.common.api.handleDataLayerResult
 import com.android.randomuser.common.api.repository.RUUsersRepository
 import com.android.randomuser.common.connectivity.RUNetworkConnectivityStatusProvider
 import com.android.randomuser.main.RUNavigationArguments
 import com.android.randomuser.ui.components.RUUIText
+import com.android.randomuser.ui.components.RUWeatherDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -44,7 +47,7 @@ class RUDetailsViewModel @Inject constructor(
     private fun getUserDetails(email: String?) {
         viewModelScope.launch {
             if (email == null) {
-                uiState.value = uiState.value.copy(error = RUUIText.DynamicString("Invalid email address"))
+                uiState.value = uiState.value.copy(error = RUUIText.StringResource(R.string.unable_to_find_the_user))
                 return@launch
             }
             val userDetails = usersRepo.getUserByEmailAddress(email)
@@ -84,7 +87,7 @@ class RUDetailsViewModel @Inject constructor(
                         it.copy(
                             weatherDetails = RUWeatherDetails(
                                 temperature = result?.main?.temp?.toString(),
-                                weatherDescription = result?.weather?.get(0)?.description,
+                                weatherDescription = result?.weather?.get(0)?.description?.capitalize(Locale.current),
                                 weatherIconUrl = "https://openweathermap.org/img/wn/${result?.weather?.get(0)?.icon}.png"
                             )
                         )
@@ -95,6 +98,13 @@ class RUDetailsViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    /**
+     * Dismiss the error message.
+     */
+    fun dismissError() {
+        uiState.update { it.copy(error = null) }
     }
 }
 
@@ -119,13 +129,4 @@ data class RUUserDetails(
     val profilePic: String? = null,
     val phone: String? = null,
     val cell: String? = null,
-)
-
-/**
- * The data class for the weather details
- */
-data class RUWeatherDetails(
-    val temperature: String? = null,
-    val weatherDescription: String? = null,
-    val weatherIconUrl: String? = null
 )

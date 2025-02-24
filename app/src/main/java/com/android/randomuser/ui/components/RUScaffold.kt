@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.randomuser.screens.detailsScreen.RUWeatherDetails
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,3 +81,12 @@ fun RUScaffold(
         }
     }
 }
+
+/**
+ * The data class for the weather details
+ */
+data class RUWeatherDetails(
+    val temperature: String? = null,
+    val weatherDescription: String? = null,
+    val weatherIconUrl: String? = null
+)
