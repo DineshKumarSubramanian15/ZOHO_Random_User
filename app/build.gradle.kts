@@ -82,4 +82,7 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
     implementation(libs.accompanist.placeholder.material)
+
+    // Splash screen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
