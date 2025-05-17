@@ -1,6 +1,6 @@
 [versions]
 accompanistPlaceholderMaterial = "0.30.1"
-agp = "8.7.0"
+agp = "8.5.2"
 coilCompose = "2.6.0"
 converterGson = "2.11.0"
 hiltAndroid = "2.51.1"
