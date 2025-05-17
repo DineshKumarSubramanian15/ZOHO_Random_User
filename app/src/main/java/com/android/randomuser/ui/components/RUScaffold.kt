@@ -15,7 +15,6 @@ fun RUScaffold(
     modifier: Modifier = Modifier,
     topBarTitle: String,
     goBack: @Composable () -> Unit = {},
-    weatherDetails: RUWeatherDetails? = null,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
@@ -36,36 +35,6 @@ fun RUScaffold(
                                 fontWeight = FontWeight.Bold
                             )
                         )
-
-                        if (weatherDetails != null) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    weatherDetails.temperature?.let {
-                                        Text(
-                                            text = "$it°C",
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            modifier = Modifier.padding(end = 8.dp)
-                                        )
-                                    }
-                                    weatherDetails.weatherDescription?.let {
-                                        Text(
-                                            text = it,
-                                            color = MaterialTheme.colorScheme.primaryContainer,
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
-
-                                AsyncImage(
-                                    model = weatherDetails.weatherIconUrl,
-                                    contentDescription = "Weather Icon",
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }
-                        }
                     }
                 },
                 navigationIcon = goBack,

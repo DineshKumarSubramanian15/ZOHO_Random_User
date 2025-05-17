@@ -1,6 +1,5 @@
 package com.android.randomuser.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.runtime.*
@@ -17,7 +16,7 @@ fun <T> RUListView(
     emptyGridContent: @Composable () -> Unit = { RUEmptyScreen() },
     showBottomLoading: Boolean = false,
     isLoading: Boolean,
-    columns: Int = 2,
+    columns: Int = 1,
     contentPadding: PaddingValues = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
 ) {
     val atLastIndex by remember {

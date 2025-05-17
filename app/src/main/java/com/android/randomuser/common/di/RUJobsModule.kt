@@ -1,9 +1,7 @@
 package com.android.randomuser.common.di
 
-import com.android.randomuser.common.api.localDataSource.RUUsersLocalDataSourceImpl
-import com.android.randomuser.common.api.localDataSource.RUUsersLocalDataSource
-import com.android.randomuser.common.api.remoteDataSource.RUUsersRemoteDataSourceImpl
-import com.android.randomuser.common.api.remoteDataSource.RUUsersRemoteDataSource
+import com.android.randomuser.common.api.remoteDataSource.RUTodoRemoteDataSourceImpl
+import com.android.randomuser.common.api.remoteDataSource.RUTodoRemoteDataSource
 import com.android.randomuser.common.api.repository.RUUsersRepoImpl
 import com.android.randomuser.common.api.repository.RUUsersRepository
 import dagger.Binds
@@ -19,8 +17,5 @@ abstract class RUJobsModule {
     abstract fun bindJobsRepository(impl: RUUsersRepoImpl): RUUsersRepository
 
     @Binds
-    abstract fun bindJobsRemoteDataSource(impl: RUUsersRemoteDataSourceImpl): RUUsersRemoteDataSource
-
-    @Binds
-    abstract fun bindUsersLocalDataSource(impl: RUUsersLocalDataSourceImpl): RUUsersLocalDataSource
+    abstract fun bindJobsRemoteDataSource(impl: RUTodoRemoteDataSourceImpl): RUTodoRemoteDataSource
 }

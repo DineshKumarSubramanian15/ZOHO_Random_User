@@ -5,5 +5,4 @@ package com.android.randomuser.main
  */
 sealed class RUMainDestinations(val route: String) {
     object ListingScreen : RUMainDestinations(route = "ListingScreen")
-    object DetailsScreen : RUMainDestinations(route = "DetailsScreen")
 }

@@ -7,7 +7,6 @@ import com.android.randomuser.common.api.RULog
 import com.android.randomuser.common.api.RURetrofit
 import com.android.randomuser.common.connectivity.RUNetworkConnectivityStatusProvider
 import com.android.randomuser.common.connectivity.RUNetworkConnectivityStatusProviderImpl
-import com.android.randomuser.common.database.RUDatabase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -40,11 +39,6 @@ object RUApplicationModule {
     @Provides
     @Singleton
     fun provideApplication(): RUApplication = RUApplication.getInstance()
-
-    @Provides
-    @Singleton
-    fun provideDatabase(): RUDatabase =
-        RUDatabase.getDatabase(provideApplication())
 
     @RUIODispatcher
     @Provides
